@@ -20,7 +20,6 @@ docker run hello-world
 
 # Install Jenkins
  sudo apt update
- sudo apt upgrade
 #Install Java
 sudo apt install openjdk-17-jdk 
 java -version
@@ -32,3 +31,42 @@ https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
 /etc/apt/sources.list.d/jenkins.list > /dev/null
 sudo apt-get update
 sudo apt-get install jenkins
+
+sudo systemctl stop jenkins.service
+sudo systemctl start jenkins.service
+sudo systemctl enable jenkins.service
+service jenkins status
+
+ufw allow 8080
+ufw allow ssh
+ufw enable
+ufw status
+
+#to show jenkins :
+http://{ip or localhost}:8080
+to get password:
+$ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+# change number of excutors to 0 for the default node to remove the warning the dashboard profile  (set label to be unique)
+
+# Configure Nodes:
+1. Click Build excutor status then then new node ,give it a name and  description then add number excutors not more no of CPUs available.
+2. Root Directorey : /home/ubuntu/agent
+3. Add label eg : linux docker (plugins for that job)
+4. Set Usage 
+5. Launch Method : Use SSH(Select Known Host Verification) ,Set Availability
+   
+# Configure SSH For Jenkins
+cd /var/lib
+ls
+cd jenkins
+ls
+mkdir -p /var/lib/jenkins/.ssh
+ssh-keyscan -H hostname >> /var/lib/jenkins/.ssh/known_hosts
+pwd
+cat .ssh/known_hosts
+clear 
+ls -last (checks what owns ssh)
+chown -R jenkins:jenkins /var/lib/jenkins/.ssh
+ls -last .ssh
+
