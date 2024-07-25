@@ -18,6 +18,11 @@ sudo systemctl enable docker
 sudo systemctl restart docker
 docker run hello-world
 
+sudo apt install docker-compose
+docker compose version
+
+# Setup SSH
+
 # Install Jenkins
  sudo apt update
 #Install Java
