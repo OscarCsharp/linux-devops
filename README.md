@@ -1,17 +1,21 @@
 # linux-devops
+#change hostname
+hostnamectl set-hostname new-hostname
 # Install Docker
 sudo apt update
-sudo apt upgrade -y
-sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+
+sudo apt install apt-transport-https curl gnupg-agent ca-certificates software-properties-common -y
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
 
-sudo apt update
-sudo apt install docker-ce -y
+sudo apt install docker-ce docker-ce-cli containerd.io -y
+sudo usermod -aG docker $USER
+docker version
 sudo systemctl status docker
+sudo systemctl start docker
 sudo systemctl enable docker
-sudo usermod -aG docker ${USER}
+sudo systemctl restart docker
 docker run hello-world
 
 # Install Jenkins
