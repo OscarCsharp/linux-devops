@@ -145,5 +145,34 @@ sudo -u jenkins ssh -i /var/lib/jenkins/.ssh/id_rsa jenkins@server_ip
 3. Add label eg : linux docker (plugins for that job)
 4. Set Usage 
 5. Launch Method : Use SSH(Select Known Host Verification) ,Set Availability
+
+#Create test pipeline 
+#Pipeline Script :
+pipeline {
+    agent any  // Run on any available agent
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Hello, Jenkins!'  // Print a message to the console
+            }
+        }
+        stage('Test') {
+            steps {
+                script {
+                    // Run a test command (replace with your actual test command)
+                    sh 'echo "Running tests..."'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed.'
+        }
+    }
+}
+
    
 
