@@ -18,6 +18,9 @@ sudo systemctl enable docker
 sudo systemctl restart docker
 docker run hello-world
 
+#add other users
+usermod -aG docker jenkins
+
 sudo apt install docker-compose
 docker compose version
 
