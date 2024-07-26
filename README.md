@@ -1,6 +1,67 @@
 # linux-devops
-#change hostname
-hostnamectl set-hostname new-hostname
+
+# Install the OpenSSH Server
+#By default, Ubuntu does not come with the OpenSSH server installed. You need to install it first.
+sudo apt update
+sudo apt install openssh-server
+#Verify SSH Service Status
+#Ensure that the SSH service is running and enabled to start on boot.
+sudo systemctl status ssh
+#You should see output indicating that the SSH service is active and running. If it is not running, start it with:
+sudo systemctl start ssh
+#To enable it to start on boot:
+sudo systemctl enable ssh
+#Gen key
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+cat ~/.ssh/id_rsa.pub
+mkdir -p ~/.ssh
+nano ~/.ssh/authorized_keys
+sudo systemctl restart ssh
+
+#Check SSH Configuration
+#Ensure that the SSH server is configured to allow key-based authentication.
+sudo nano /etc/ssh/sshd_config
+#Ensure the following settings are correct:
+PubkeyAuthentication yes
+AuthorizedKeysFile     %h/.ssh/authorized_keys
+#Check File Ownership and Permissions
+#Ensure the .ssh directory and authorized_keys file on the server have the correct ownership and permissions:
+##Set ownership to your user
+chown -R yourusername:yourusername ~/.ssh
+#Set permissions
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+Replace yourusername with the actual username on the server.
+
+5. Verify SSH Key Format
+Ensure the SSH key format is correct and not corrupted. The public key file (id_rsa.pub) should begin with ssh-rsa followed by the key data and optionally a comment (e.g., your email).
+
+6. Check for SSH Agent Issues
+Ensure your SSH agent is running and has the private key loaded:
+
+bash
+Copy code
+ssh-add -l
+If the private key is not listed, add it:
+
+bash
+Copy code
+ssh-add ~/.ssh/id_rsa
+7. Test SSH Connection
+After making these changes, attempt to connect to the server again:
+
+bash
+Copy code
+ssh username@server_ip
+Replace username with your actual username and server_ip with the server's IP address.
+
+8. Review SSH Logs (if needed)
+If the connection still fails, check the SSH server logs on the server for more details:
+
+bash
+Copy code
+sudo tail -f /var/log/auth.log
+
 # Install Docker
 sudo apt update
 
