@@ -128,45 +128,22 @@ $ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 #change number of excutors to 0 for the default node to remove the warning the dashboard profile  (set label to be unique)
 
-# Configure Jenkins to Use Docker
-#Grant Jenkins User Docker Access:
-
-#Install Docker Plugin for Jenkins:
-#Go to the Available tab and search for "Docker".Install the "Docker" plugin.
-
-#Configure Jenkins Docker Settings:
-#In Jenkins, navigate to Manage Jenkins > Manage Nodes and Clouds > Configure Clouds. Click on Add a new cloud and select Docker.
-#Configure the Docker cloud settings:
-#Docker Host URI: Use unix:///var/run/docker.sock if Docker is running locally.
-#Credentials: Leave this empty if connecting to a local Docker daemon.
-#Save the configuration.
-
-#Generate new ssh keys 
-ssh-keygen
-ssh-copy-id username@server-ip
-
-# Create Freestyle project to test connection
-
-
+# Configure Jenkins
+sudo mkdir -p /var/lib/jenkins/.ssh
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.ssh
+sudo chmod 700 /var/lib/jenkins/.ssh
+sudo -u jenkins ssh-keyscan -H remote_host >> /var/lib/jenkins/.ssh/known_hosts
+sudo -u jenkins cat /var/lib/jenkins/.ssh/known_hosts
+sudo chown jenkins:jenkins /var/lib/jenkins/.ssh/known_hosts
+sudo chmod 644 /var/lib/jenkins/.ssh/known_hosts
+sudo -u jenkins ssh -i /var/lib/jenkins/.ssh/id_rsa jenkins@server_ip
 
 # Configure Nodes:
-1. Click Build excutor status then then new node ,give it a name and  description then add number excutors not more no of CPUs available.
+#Click Build excutor status then then new node ,give it a name and  description then add number excutors not more no of CPUs available.
+#Add ssh crendentials
 2. Root Directorey : /home/ubuntu/agent
 3. Add label eg : linux docker (plugins for that job)
 4. Set Usage 
 5. Launch Method : Use SSH(Select Known Host Verification) ,Set Availability
    
-# Configure SSH For Jenkins
-cd /var/lib
-ls
-cd jenkins
-ls
-mkdir -p /var/lib/jenkins/.ssh
-ssh-keyscan -H hostname >> /var/lib/jenkins/.ssh/known_hosts
-pwd
-cat .ssh/known_hosts
-clear 
-ls -last (checks what owns ssh)
-chown -R jenkins:jenkins /var/lib/jenkins/.ssh
-ls -last .ssh
 
