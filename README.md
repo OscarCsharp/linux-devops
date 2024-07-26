@@ -73,6 +73,7 @@ ssh username@serverip
 
 
 # Install Docker
+sudo su -
 sudo apt update
 
 sudo apt install apt-transport-https curl gnupg-agent ca-certificates software-properties-common -y
@@ -92,7 +93,6 @@ docker run hello-world
 sudo apt install docker-compose
 docker compose version
 
-# Setup SSH
 
 # Install Jenkins
  sudo apt update
@@ -123,7 +123,7 @@ ufw status
 
 #to show jenkins :
 http://{ip or localhost}:8080
-to get password:
+#to get password:
 $ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 #change number of excutors to 0 for the default node to remove the warning the dashboard profile  (set label to be unique)
