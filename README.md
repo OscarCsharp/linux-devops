@@ -18,9 +18,6 @@ sudo systemctl enable docker
 sudo systemctl restart docker
 docker run hello-world
 
-#add other users
-usermod -aG docker jenkins
-
 sudo apt install docker-compose
 docker compose version
 
@@ -45,6 +42,9 @@ sudo systemctl start jenkins.service
 sudo systemctl enable jenkins.service
 service jenkins status
 
+#check if user jenkins exists
+usermod -aG docker jenkins
+
 ufw allow 8080
 ufw allow ssh
 ufw enable
@@ -55,7 +55,28 @@ http://{ip or localhost}:8080
 to get password:
 $ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
-# change number of excutors to 0 for the default node to remove the warning the dashboard profile  (set label to be unique)
+#change number of excutors to 0 for the default node to remove the warning the dashboard profile  (set label to be unique)
+
+# Configure Jenkins to Use Docker
+#Grant Jenkins User Docker Access:
+
+#Install Docker Plugin for Jenkins:
+#Go to the Available tab and search for "Docker".Install the "Docker" plugin.
+
+#Configure Jenkins Docker Settings:
+#In Jenkins, navigate to Manage Jenkins > Manage Nodes and Clouds > Configure Clouds. Click on Add a new cloud and select Docker.
+#Configure the Docker cloud settings:
+#Docker Host URI: Use unix:///var/run/docker.sock if Docker is running locally.
+#Credentials: Leave this empty if connecting to a local Docker daemon.
+#Save the configuration.
+
+#Generate new ssh keys 
+ssh-keygen
+ssh-copy-id username@server-ip
+
+# Create Freestyle project to test connection
+
+
 
 # Configure Nodes:
 1. Click Build excutor status then then new node ,give it a name and  description then add number excutors not more no of CPUs available.
