@@ -1,6 +1,9 @@
 # linux-devops
 
 # Install the OpenSSH Server
+#check ssh is installed
+sudo service ssh status
+#if installed skip to generate keys
 #By default, Ubuntu does not come with the OpenSSH server installed. You need to install it first.
 sudo apt update
 sudo apt install openssh-server
@@ -11,56 +14,63 @@ sudo systemctl status ssh
 sudo systemctl start ssh
 #To enable it to start on boot:
 sudo systemctl enable ssh
-#Gen key
+
+#Gen keys
+#check if exists 
+ls ~/.ssh
+#view public key
+cat ~/.ssh/id_rsa.pub
+#if does exist generate
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+#Add the Key to the SSH Agent:
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa.pub
 mkdir -p ~/.ssh
 nano ~/.ssh/authorized_keys
 sudo systemctl restart ssh
+#checkers used for authentication
+ls -ld /home/*
+ls -ld /home/*/.ssh
+#use of the users to test ssh
+ssh ubuntu@server_ip
 
-#Check SSH Configuration
-#Ensure that the SSH server is configured to allow key-based authentication.
-sudo nano /etc/ssh/sshd_config
-#Ensure the following settings are correct:
-PubkeyAuthentication yes
-AuthorizedKeysFile     %h/.ssh/authorized_keys
-#Check File Ownership and Permissions
-#Ensure the .ssh directory and authorized_keys file on the server have the correct ownership and permissions:
-##Set ownership to your user
-chown -R yourusername:yourusername ~/.ssh
-#Set permissions
+#if  ssh test fails
+#Configure SSH
+#Manually Copy the Public Key
+If ssh-copy-id doesn't work, you can manually copy the public key:
+cat ~/.ssh/id_rsa.pub
+#On the server, open or create the authorized_keys file in the .ssh directory for the user:
+mkdir -p ~/.ssh
+nano ~/.ssh/authorized_keys
+#Paste the public key into this file. Ensure each key is on its own line.
+#Set Permissions
 chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
-Replace yourusername with the actual username on the server.
+sudo systemctl restart ssh
+#Verify SSH Configuration
+sudo nano /etc/ssh/sshd_config
+#Ensure the following settings are correct: copy and paste then save
+PubkeyAuthentication yes
+AuthorizedKeysFile     %h/.ssh/authorized_keys
 
-5. Verify SSH Key Format
-Ensure the SSH key format is correct and not corrupted. The public key file (id_rsa.pub) should begin with ssh-rsa followed by the key data and optionally a comment (e.g., your email).
+#Restart SSH Service
+systemctl restart ssh
+#Check File Ownership and Permissions
+chown -R ubuntu:ubuntu ~/.ssh
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+#Replace ubuntu with the actual username on the server.
 
-6. Check for SSH Agent Issues
-Ensure your SSH agent is running and has the private key loaded:
-
-bash
-Copy code
-ssh-add -l
-If the private key is not listed, add it:
-
-bash
-Copy code
+#Check SSH Agent
 ssh-add ~/.ssh/id_rsa
-7. Test SSH Connection
-After making these changes, attempt to connect to the server again:
+#Check if the key is added:
+ssh-add -l
+#Test SSH Connection
+After making these changes, try to connect again:
+ssh username@serverip
 
-bash
-Copy code
-ssh username@server_ip
-Replace username with your actual username and server_ip with the server's IP address.
 
-8. Review SSH Logs (if needed)
-If the connection still fails, check the SSH server logs on the server for more details:
-
-bash
-Copy code
-sudo tail -f /var/log/auth.log
 
 # Install Docker
 sudo apt update
