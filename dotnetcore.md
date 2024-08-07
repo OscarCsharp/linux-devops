@@ -1,3 +1,33 @@
+#Remove Apache2 if exists
+# Stop Apache2 service
+sudo systemctl stop apache2
+
+# Disable Apache2 from starting on boot
+sudo systemctl disable apache2
+
+# Remove Apache2 packages and configuration files
+sudo apt-get purge -y apache2 apache2-utils apache2-bin apache2.2-common
+
+# Remove any additional dependencies no longer needed
+sudo apt-get autoremove -y
+
+# Optionally, remove Apache2 configuration directories if they still exist
+sudo rm -rf /etc/apache2
+
+# Verify that Apache2 is removed
+systemctl status apache2 || echo "Apache2 service not found"
+dpkg -l | grep apache2 || echo "No Apache2 packages found"
+
+# Restart the server (optional, to ensure all changes take effect)
+sudo reboot
+
+
+
+sudo apt update
+sudo apt install nano
+# Install Curl
+sudo apt update
+sudo apt install curl
 
 # Install Docker
 sudo apt install -y docker.io
@@ -22,28 +52,100 @@ sudo systemctl enable jenkins
 sudo usermod -aG docker jenkins
 sudo systemctl restart jenkins
 
-#check ssh statussudo systemctl status ssh
-sudo systemctl status ssh
-
 
 sudo visudo
 #add this line
 jenkins ALL=(ALL) NOPASSWD:ALL
 
+#check ssh statussudo systemctl status ssh
+sudo systemctl status ssh
 
-sudo su - jenkins
-ssh-keygen -t rsa -b 4096 -C "admin@nivaltec.co.za"
-chmod 700 ~/.ssh
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-touch ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-echo ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-
-
+# Install Nginx
+#!/bin/bash
 sudo apt update
-sudo apt install nano
+sudo apt upgrade
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo systemctl status nginx
+
+chmod +x nginx_install_script.sh
+./nginx_install_script.sh
+
+# Complete Jenkins Setup
+sudo su - jenkins
+#Open your web browser and go to http://<vm-ip-address>:8080.
+#Follow the on-screen instructions to unlock Jenkins using the initial admin password found at 
+cat /var/lib/jenkins/secrets/initialAdminPassword
+
+# Complete Ngnix Setup
+sudo vi /etc/nginx/sites-available/jenkins.pavan-devops.cloud #change file name to server hostname
+#copy paste
+upstream jenkins{
+    server 127.0.0.1:8080;
+}
+
+server{
+    listen      80;
+    server_name devops-nivaltec.co.za;
+
+    access_log  /var/log/nginx/jenkins.access.log;
+    error_log   /var/log/nginx/jenkins.error.log;
+
+    proxy_buffers 16 64k;
+    proxy_buffer_size 128k;
+
+    location / {
+        proxy_pass  http://jenkins;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_redirect off;
+
+        proxy_set_header    Host            $host;
+        proxy_set_header    X-Real-IP       $remote_addr;
+        proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto https;
+    }
+
+}
+
+#Update dns
+sudo apt update
+sudo apt install dnsutils
+dig devops-nivaltec.co.za A
+dig devops-nivaltec.co.za AAAA
+
+sudo ln -s /etc/nginx/sites-available/devops-nivaltec.co.za /etc/nginx/sites-enable
+sudo nginx -t
+sudo systemctl restart nginx
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d devops-nivaltec.co.za
+
+# Setup SSH
+ssh-keygen -t rsa -b 4096 -C "admin@nivaltec.co.za"
+#Create the .ssh directory if it doesn’t exist
+mkdir -p ~/.ssh
+#Set the correct permissions for the .ssh directory
+chmod 700 ~/.ssh
+#Append your public key to the authorized_keys file
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+#Set the correct permissions for the authorized_keys file
+chmod 600 ~/.ssh/authorized_keys
+sudo nano /etc/ssh/sshd_config
+#Paste
+PubkeyAuthentication yes
+AuthorizedKeysFile %h/.ssh/authorized_keys
+#Restart
+sudo usermod -aG adm $USER
+sudo usermod -aG systemd-journal $USER
+#Log Out and Log Back In
+sudo mkdir -p /run/sshd
+#Set the correct ownership and permissions
+sudo chown jenkins:jenkins /run/sshd
+sudo chmod 755 /run/sshd
+sudo systemctl restart ssh
+
+
 sudo nano /etc/ssh/sshd_config
 #enable the below
 #PubkeyAuthentication yes
@@ -53,6 +155,8 @@ sudo nano /etc/ssh/sshd_config
 
 ssh-keyscan -H 102.130.116.102 >> /var/lib/jenkins/.ssh/known_hosts
 ssh -i ~/.ssh/id_rsa jenkins@102.130.116.102
+#issues reinstall and begin again
+
 
 
 # Install Ngix
@@ -67,31 +171,15 @@ sudo visudo
 
 
 
-# Install Curl
-sudo apt update
-sudo apt install curl
+
 
 sudo apt-get update
 sudo apt-get install firewalld
 
-sudo systemctl start firewalld
-sudo systemctl enable firewalld
-sudo firewall-cmd --permanent --add-port=80/tcp
-sudo firewall-cmd --reload
-sudo firewall-cmd --list-all
-
-
-
-
-
-
 
 # Configure Jenkins
 
-#Open your web browser and go to http://<vm-ip-address>:8080.
-#Follow the on-screen instructions to unlock Jenkins using the initial admin password found at 
-cat /var/lib/jenkins/secrets/initialAdminPassword
-#Configure jenkins
+
 
 
 #Click Build excutor status then then new node ,give it a name and  description then add number excutors not more no of CPUs available.
