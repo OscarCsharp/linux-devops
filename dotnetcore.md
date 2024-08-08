@@ -190,6 +190,7 @@ sudo systemctl restart nginx
 sudo systemctl reload nginx
 
 
+
 sudo visudo
 #add this line
 jenkins ALL=(ALL) NOPASSWD:ALL
