@@ -1,56 +1,193 @@
-#Remove Apache2 if exists
-# Stop Apache2 service
+# Remove Apache2 if exists
+#Stop Apache2 service
 sudo systemctl stop apache2
 
-# Disable Apache2 from starting on boot
+#Disable Apache2 from starting on boot
 sudo systemctl disable apache2
 
-# Remove Apache2 packages and configuration files
+#Remove Apache2 packages and configuration files
 sudo apt-get purge -y apache2 apache2-utils apache2-bin apache2.2-common
 
-# Remove any additional dependencies no longer needed
+#Remove any additional dependencies no longer needed
 sudo apt-get autoremove -y
 
-# Optionally, remove Apache2 configuration directories if they still exist
+#Optionally, remove Apache2 configuration directories if they still exist
 sudo rm -rf /etc/apache2
+sudo rm -rf /var/www/html
 
-# Verify that Apache2 is removed
+#Verify that Apache2 is removed
 systemctl status apache2 || echo "Apache2 service not found"
 dpkg -l | grep apache2 || echo "No Apache2 packages found"
 
-# Restart the server (optional, to ensure all changes take effect)
+#Restart the server (optional, to ensure all changes take effect)
 sudo reboot
 
+# Server Initial Config
+#check status , installed and enable or install
+sudo ufw status
+#install
+sudo apt update
+sudo apt install ufw
+sudo ufw enable
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 22/tcp
+sudo ufw status
+sudo ufw reload
 
+sudo reboot
 
 sudo apt update
 sudo apt install nano
-# Install Curl
 sudo apt update
 sudo apt install curl
 
+# Install Nginx
+#!/bin/bash
+sudo apt update
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo systemctl status nginx
+
+#Configure Ngnix
+sudo nano /etc/nginx/sites-available/nivaltecdevops.co.za
+#copy and paste
+server {
+    listen 80;
+    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
+    root /var/www/nivaltecdevops/public_html;  
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    # Logging
+    access_log /var/log/nginx/nivaltecdevops.access.log;
+    error_log /var/log/nginx/nivaltecdevops.co.za.error.log;
+ }
+
+sudo mkdir -p /var/www/nivaltecdevops/public_html 
+sudo nano /var/www/nivaltecdevops/public_html/index.html
+#copy and paste
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Page Image</title>
+    <style>
+        /* Reset margin and padding */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* Make body and html elements full height */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        /* Style the image to cover the entire viewport */
+        .full-page-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover; /* Ensure the image covers the viewport */
+        }
+    </style>
+</head>
+<body>
+    <!-- Use an img tag to display the image -->
+    <img src="https://learn.microsoft.com/en-us/azure/azure-web-pubsub/media/quickstarts-pubsub-among-clients/among-clients.gif" alt="Full Page Image" class="full-page-image">
+</body>
+</html>
+
+
+sudo chown -R www-data:www-data /var/www/nivaltecdevops
+sudo chmod -R 755 /var/www/nivaltecdevops
+sudo ln -s /etc/nginx/sites-available/nivaltecdevops.co.za /etc/nginx/sites-enabled/
+sudo unlink /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl reload nginx
+
 # Install Docker
+sudo apt update
 sudo apt install -y docker.io
-# Start and enable Docker
+#Start and enable Docker
 sudo systemctl start docker
 sudo systemctl enable docker
-# Add your user to the docker group (optional)
+#Add your user to the docker group (optional)
 sudo usermod -aG docker $USER
 
 # Install Jenkins
+sudo apt update
 sudo apt install openjdk-17-jdk
-# Add Jenkins repository and key
+#Add Jenkins repository and key
 wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
 echo deb http://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
-# Install Jenkins
+#Install Jenkins
 sudo apt update
 sudo apt install -y jenkins
-# Start and enable jenkins
+#Start and enable jenkins
 sudo systemctl start jenkins
 sudo systemctl enable jenkins
 #add jenkins user to docker	
 sudo usermod -aG docker jenkins
 sudo systemctl restart jenkins
+sudo ufw allow 8080/tcp
+sudo ufw reload
+
+#Complete Jenkins Setup
+#Open your web browser and go to http://<vm-ip-address>:8080.
+#Follow the on-screen instructions to unlock Jenkins using the initial admin password found at 
+cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+
+# Secure Connections using certbot
+sudo apt-get update
+sudo apt-get install certbot python3-certbot-nginx
+sudo certbot --nginx -d nivaltecdevops.co.za -d www.nivaltecdevops.co.za
+
+#check certificate location
+sudo nano /etc/nginx/sites-available/nivaltecdevops.co.za
+#copy and paste
+# Redirect HTTP (port 80) to HTTPS (port 443)
+server {
+    listen 80;
+    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
+    return 301 https://$host$request_uri;
+}
+
+# Redirect HTTP on port 8080 to HTTPS (port 443)
+server {
+    listen 8080;
+    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
+    return 301 https://$host$request_uri;
+}
+
+# HTTPS Server Block
+server {
+    listen 443 ssl;
+    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
+
+    root /var/www/nivaltecdevops;
+    index index.html;
+
+    ssl_certificate /etc/letsencrypt/live/nivaltecdevops.co.za/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nivaltecdevops.co.za/privkey.pem;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl reload nginx
 
 
 sudo visudo
@@ -59,69 +196,10 @@ jenkins ALL=(ALL) NOPASSWD:ALL
 
 #check ssh statussudo systemctl status ssh
 sudo systemctl status ssh
-
-# Install Nginx
-#!/bin/bash
-sudo apt update
-sudo apt upgrade
-sudo apt install nginx -y
-sudo systemctl start nginx
-sudo systemctl enable nginx
-sudo systemctl status nginx
-
-chmod +x nginx_install_script.sh
-./nginx_install_script.sh
-
-# Complete Jenkins Setup
-sudo su - jenkins
-#Open your web browser and go to http://<vm-ip-address>:8080.
-#Follow the on-screen instructions to unlock Jenkins using the initial admin password found at 
-cat /var/lib/jenkins/secrets/initialAdminPassword
-
-# Complete Ngnix Setup
-sudo vi /etc/nginx/sites-available/jenkins.pavan-devops.cloud #change file name to server hostname
-#copy paste
-upstream jenkins{
-    server 127.0.0.1:8080;
-}
-
-server{
-    listen      80;
-    server_name devops-nivaltec.co.za;
-
-    access_log  /var/log/nginx/jenkins.access.log;
-    error_log   /var/log/nginx/jenkins.error.log;
-
-    proxy_buffers 16 64k;
-    proxy_buffer_size 128k;
-
-    location / {
-        proxy_pass  http://jenkins;
-        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-        proxy_redirect off;
-
-        proxy_set_header    Host            $host;
-        proxy_set_header    X-Real-IP       $remote_addr;
-        proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header    X-Forwarded-Proto https;
-    }
-
-}
-
-#Update dns
-sudo apt update
-sudo apt install dnsutils
-dig devops-nivaltec.co.za A
-dig devops-nivaltec.co.za AAAA
-
-sudo ln -s /etc/nginx/sites-available/devops-nivaltec.co.za /etc/nginx/sites-enable
-sudo nginx -t
-sudo systemctl restart nginx
-sudo apt update
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d devops-nivaltec.co.za
+sudo reboot
 
 # Setup SSH
+sudo su - jenkins
 ssh-keygen -t rsa -b 4096 -C "admin@nivaltec.co.za"
 #Create the .ssh directory if it doesn’t exist
 mkdir -p ~/.ssh
