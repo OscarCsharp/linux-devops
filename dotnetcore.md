@@ -156,21 +156,21 @@ sudo certbot --nginx -d nivaltecdevops.co.za -d www.nivaltecdevops.co.za
 #check certificate location
 sudo nano /etc/nginx/sites-available/nivaltecdevops.co.za
 #copy and paste
-# Redirect HTTP (port 80) to HTTPS (port 443)
+#Redirect HTTP (port 80) to HTTPS (port 443)
 server {
     listen 80;
     server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
     return 301 https://$host$request_uri;
 }
 
-# Redirect HTTP on port 8080 to HTTPS (port 443)
-server {
-    listen 8080;
-    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
-    return 301 https://$host$request_uri;
-}
+#Redirect HTTP on port 8080 to HTTPS (port 443)
+#server {
+    #listen 8080;
+    #server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
+    #return 301 https://$host$request_uri;
+#}
 
-# HTTPS Server Block
+#HTTPS Server Block
 server {
     listen 443 ssl;
     server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
