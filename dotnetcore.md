@@ -156,39 +156,38 @@ sudo certbot --nginx -d nivaltecdevops.co.za -d www.nivaltecdevops.co.za
 #check certificate location
 sudo nano /etc/nginx/sites-available/nivaltecdevops.co.za
 #copy and paste
-#Redirect HTTP (port 80) to HTTPS (port 443)
 server {
-    listen 80;
-    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
-    return 301 https://$host$request_uri;
-}
+        server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;                       
+		access_log /var/log/nginx/nivaltecdevops.log;                                    
+		error_log /var/log/nginx/nivaltecdevops.demo.log;                                
+		proxy_buffers 16 64k;                                                            
+		proxy_buffer_size 128k;                                                                                                                                           location / {                                                                        proxy_pass http://nivaltecdevops.co.za:8080;                                     proxy_next_upstream error timeout invalid_header http_500 http_502 ht>           proxy_redirect off;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto http;
+        }
 
-#Redirect HTTP on port 8080 to HTTPS (port 443)
-#server {
-    #listen 8080;
-    #server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
-    #return 301 https://$host$request_uri;
-#}
-
-#HTTPS Server Block
-server {
     listen 443 ssl;
-    server_name nivaltecdevops.co.za www.nivaltecdevops.co.za;
-
-    root /var/www/nivaltecdevops;
-    index index.html;
-
     ssl_certificate /etc/letsencrypt/live/nivaltecdevops.co.za/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/nivaltecdevops.co.za/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
 
+server {
+    listen 80;
+    server_name nivaltecdevops.co.za;
+
+    # Redirect HTTP to HTTPS
     location / {
-        try_files $uri $uri/ =404;
+        return 301 https://$host$request_uri;
     }
 }
+
 sudo nginx -t
 sudo systemctl restart nginx
 sudo systemctl reload nginx
-
 
 
 sudo visudo
