@@ -189,17 +189,17 @@ sudo nginx -t
 sudo systemctl restart nginx
 sudo systemctl reload nginx
 
-
+# User Privilleges
 sudo visudo
 #add this line
 jenkins ALL=(ALL) NOPASSWD:ALL
-
-#check ssh statussudo systemctl status ssh
-sudo systemctl status ssh
 sudo reboot
 
 # Setup SSH
 sudo su - jenkins
+sudo apt update
+sudo apt install openssh-server
+
 ssh-keygen -t rsa -b 4096 -C "admin@nivaltec.co.za"
 #Create the .ssh directory if it doesn’t exist
 mkdir -p ~/.ssh
@@ -213,7 +213,7 @@ sudo nano /etc/ssh/sshd_config
 #Paste
 PubkeyAuthentication yes
 AuthorizedKeysFile %h/.ssh/authorized_keys
-#Restart
+
 sudo usermod -aG adm $USER
 sudo usermod -aG systemd-journal $USER
 #Log Out and Log Back In
@@ -223,48 +223,17 @@ sudo chown jenkins:jenkins /run/sshd
 sudo chmod 755 /run/sshd
 sudo systemctl restart ssh
 
-
-sudo nano /etc/ssh/sshd_config
-#enable the below
-#PubkeyAuthentication yes
-#AuthorizedKeysFile %h/.ssh/authorized_keys 
-
-
-
 ssh-keyscan -H 102.130.116.102 >> /var/lib/jenkins/.ssh/known_hosts
 ssh -i ~/.ssh/id_rsa jenkins@102.130.116.102
 #issues reinstall and begin again
 
 
+# Configure Jenkins For Development
 
-# Install Ngix
-sudo apt-get update
-sudo apt-get install nginx
-#apache running stop it
-sudo systemctl stop apache2
-sudo systemctl restart nginx
-sudo systemctl status nginx.service
-sudo systemctl status nginx
-sudo visudo
-
-
-
-
-
-sudo apt-get update
-sudo apt-get install firewalld
-
-
-# Configure Jenkins
-
-
-
-
-#Click Build excutor status then then new node ,give it a name and  description then add number excutors not more no of CPUs available.
 #Create credentials for SSH (username with private key ) on jenkins
-#Create a Node to run and use the crendetials
-# copy cat ~/.ssh/id_rsa
+#copy cat ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa
+#Create credentials for jenkins and github ,use username with password
 # create a node and th root should be : /var/lib/jenkins/agent-name
 #ls -ld /var/lib/jenkins/agent-name/workspace/projectname
 
